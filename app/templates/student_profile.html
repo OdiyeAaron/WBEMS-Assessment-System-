@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - {{ student.name }}{% endblock %}
+
+{% block content %}
+    <style>
+        /* --- 1. GENERAL LAYOUT & STYLING --- */
+        .profile-header-grid {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .profile-info {
+            flex: 1;
+        }
+        
+        /* Two-column layout for top cards */
+        .top-card-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr; /* HIRE and Metrics */
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        /* Two-column layout for history/tables */
+        .data-section-grid {
+            display: grid;
+            grid-template-columns: 3fr 2fr; /* Chart and Timeline */
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        /* Card base styling */
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            background-color: #fff;
+        }
+        .card-header {
+            border-radius: 8px 8px 0 0;
+            padding: 15px;
+            font-weight: bold;
+        }
+        .card-body {
+            padding: 20px;
+        }
+
+        /* --- 2. HIRE REPORT COLOR CODING --- */
+
+        .hire-card {
+            border-left: 5px solid;
+            padding: 15px;
+            transition: all 0.3s;
+        }
+        .hire-card-critical { border-left-color: #dc3545; }
+        .hire-card-high { border-left-color: #ffc107; }
+        .hire-card-medium { border-left-color: #007bff; }
+        .hire-card-low { border-left-color: #28a745; }
+
+        .priority-badge {
+            font-size: 1.1em;
+            padding: 6px 12px;
+            border-radius: 4px;
+        }
+
+        /* --- 3. VISUAL METRICS (PROGRESS BARS & SCORES) --- */
+
+        .competence-score-display {
+            font-size: 3em;
+            font-weight: bold;
+            color: #007bff;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .metric-item {
+            margin-bottom: 15px;
+        }
+        .metric-item label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+        /* Progress Bar Styling */
+        progress {
+            width: 100%;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        progress::-webkit-progress-bar { background-color: #eee; }
+        progress::-webkit-progress-value { background-color: #007bff; border-radius: 5px; }
+
+        /* Conditional Progress Bar Coloring */
+        progress.bad::-webkit-progress-value { background-color: #dc3545; }
+        progress.medium::-webkit-progress-value { background-color: #ffc107; }
+        progress.good::-webkit-progress-value { background-color: #28a745; }
+        
+        /* --- 4. CHART AND TIMELINE --- */
+        .chart-container {
+            position: relative;
+            height: 350px;
+            width: 100%;
+        }
+        .timeline {
+            border-left: 2px solid #dee2e6;
+            padding-left: 25px;
+            margin-left: 5px;
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 15px;
+            padding-left: 10px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 6px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 3px solid #fff;
+        }
+        .timeline-Absent::before { background: red; }
+        .timeline-Present::before { background: green; }
+
+    </style>
+
+    <h1>Student Profile: {{ student.name }}</h1>
+    <p><a href="{{ url_for('dashboard') }}">&larr; Back to Dashboard</a></p>
+
+    <div class="profile-header-grid">
+        <div class="profile-info">
+            <h2>General Information</h2>
+            <p><strong>Level:</strong> {{ student.level or 'N/A' }}</p>
+            <p><strong>Course:</strong> {{ student.course or 'N/A' }}</p>
+            <p><strong>Academic Score:</strong> {{ student.academic_performance }}%</p>
+            <br>
+            <a href="{{ url_for('update_student_profile', student_id=student.id) }}" class="button profile-update-button">Update Profile Details</a>
+        </div>
+        
+        <div class="card competence-card">
+            <h2>Overall Competence</h2>
+            {% if competence %}
+                <div class="competence-score-display">{{ competence.score|round(1) }}</div>
+                <div class="competence-grade grade-{{ competence.grade }} text-center h4 mt-2">{{ competence.grade }}</div>
+                <p class="text-center text-muted">Last Calculated: {{ competence.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+            {% else %}
+                <p>No Competence Score calculated yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <hr>
+
+    <h2>Intervention & Key Metrics</h2>
+    <div class="top-card-grid">
+
+        {% set priority_lower = hire_report.priority | lower %}
+        {% set priority_class = 'hire-card-' + priority_lower %}
+        
+        <div class="card shadow-sm {{ priority_class }}" style="flex: 2;">
+            <div class="card-body hire-card">
+                <h4 class="mb-3">
+                    Holistic Intervention Reasoning Engine (HIRE)
+                    <span class="badge {{ 'bg-danger' if priority_lower == 'critical' else ('bg-warning text-dark' if priority_lower == 'high' else 'bg-success') }} priority-badge float-end">
+                        {{ hire_report.priority }}
+                    </span>
+                </h4>
+                
+                <h6 class="text-muted">ROOT CAUSE ANALYSIS:</h6>
+                <p class="lead">{{ hire_report.root_cause }}</p>
+
+                <h6 class="text-muted mt-4">PRIORITIZED ACTION PLAN:</h6>
+                <ul class="list-group list-group-flush">
+                    {% for action in hire_report.actions %}
+                        <li class="list-group-item">{{ action | safe }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm" style="flex: 1;">
+            <div class="card-body">
+                <h4>Performance Indicators</h4>
+                {% set att_val = attendance_percent | float %}
+                {% set part_val = avg_participation | float %}
+                
+                <div class="metric-item">
+                    <label>Academic Performance: **{{ student.academic_performance }}%**</label>
+                    <progress value="{{ student.academic_performance }}" max="100"></progress>
+                </div>
+
+                <div class="metric-item">
+                    <label>Attendance Rate: **{{ att_val }}%**</label>
+                    {% set att_class = 'bad' if att_val < 75 else ('medium' if att_val < 90 else 'good') %}
+                    <progress value="{{ att_val }}" max="100" class="{{ att_class }}"></progress>
+                </div>
+                
+                <div class="metric-item">
+                    <label>Avg. Participation Rating: **{{ part_val|round(1) }} / 10**</label>
+                    <progress value="{{ part_val * 10 }}" max="100"></progress>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+    
+    <h2>Historical Performance</h2>
+    <div class="data-section-grid">
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h3>📈 Competence Score Trend</h3>
+                <div class="chart-container">
+                    {% if historical_scores %}
+                        <canvas id="competenceChart"></canvas>
+                    {% else %}
+                        <p>No historical score data available to generate a trend graph.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h3>⏰ Attendance Timeline (Latest Events)</h3>
+                <div class="timeline">
+                    {% for rec in attendance_records[:5] %}
+                        <div class="timeline-item timeline-{{ rec.status | capitalize }}">
+                            <strong class="{{ rec.status | lower }}">{{ rec.status | capitalize }}</strong> on {{ rec.date.strftime('%Y-%m-%d') }}
+                        </div>
+                    {% else %}
+                        <p>No recent attendance history.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+    
+    <h2>Detailed Activity History</h2>
+    <div class="data-section-grid" style="grid-template-columns: 1fr 1fr;">
+        <div class="table-container card shadow-sm">
+            <div class="card-body">
+                <h3>Full Attendance Log</h3>
+                <table>
+                    <thead><tr><th>Date</th><th>Status</th></tr></thead>
+                    <tbody>
+                        {% for a in attendance_records %}
+                        <tr class="status-{{ a.status | lower }}">
+                            <td>{{ a.date.strftime('%Y-%m-%d') }}</td>
+                            <td><span class="{{ a.status | lower }}">{{ a.status|capitalize }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="table-container card shadow-sm">
+            <div class="card-body">
+                <h3>Co-Curricular Activities</h3>
+                <table>
+                    <thead><tr><th>Activity</th><th>Rating</th><th>Date</th></tr></thead>
+                    <tbody>
+                        {% for p in participations %}
+                        <tr>
+                            <td>{{ p.activity.name if p.activity else 'Unspecified Activity' }}</td>
+                            <td>{{ p.rating|round(1) }}</td>
+                            <td>{{ p.timestamp.strftime('%Y-%m-%d') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% block scripts %}
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+        
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var historicalScoresJson = '{{ historical_scores | tojson | safe }}';
+                
+                // Handling potential double-encoding from tojson | safe 
+                try {
+                    var scoresData = JSON.parse(historicalScoresJson.replace(/&quot;/g, '"'));
+                } catch (e) {
+                    console.error("Error parsing historical scores JSON:", e);
+                    return; // Stop if data is bad
+                }
+
+
+                if (scoresData && scoresData.length > 0) {
+                    // Sort data by update time to ensure correct plotting order
+                    scoresData.sort((a, b) => new Date(a.updated_at) - new Date(b.updated_at));
+
+                    var labels = scoresData.map(function(score) {
+                        var date = new Date(score.calculated_at || score.updated_at);
+                        return date.toLocaleDateString();
+                    });
+                    var data = scoresData.map(function(score) {
+                        return score.score;
+                    });
+                    
+                    var ctx = document.getElementById('competenceChart').getContext('2d');
+
+                    var competenceChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Competence Score (%)',
+                                data: data,
+                                borderColor: 'rgb(0, 123, 255)',
+                                backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                                tension: 0.2, 
+                                fill: true,
+                                z: 2, // Ensure it's drawn on top
+                            },
+                            // --- ADD 60% THRESHOLD LINE ---
+                            {
+                                label: 'Risk Threshold (60%)',
+                                data: new Array(data.length).fill(60),
+                                borderColor: 'rgb(220, 53, 69)',
+                                borderWidth: 2,
+                                borderDash: [5, 5],
+                                pointRadius: 0,
+                                fill: false,
+                                type: 'line',
+                                z: 1, // Ensure it's drawn below main data
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 100,
+                                    title: {
+                                        display: true,
+                                        text: 'Score (%)'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        </script>
+    {% endblock %}
+{% endblock %}

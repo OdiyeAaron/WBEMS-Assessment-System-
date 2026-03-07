@@ -1,0 +1,258 @@
+/* Color Palette: Deep Blue (Primary), Vibrant Teal (Accent), Clean Grays */
+
+:root {
+    --color-primary: #1e3c72;      /* Deep Blue */
+    --color-secondary: #2a5298;    /* Slightly Lighter Blue */
+    --color-accent: #00bcd4;       /* Cyan/Teal for highlights */
+    --color-background: #f4f7f6;   /* Very Light Gray Background */
+    --color-text: #333;
+    --color-border: #e0e0e0;
+    --color-success: #2ecc71;
+    --color-warning: #f1c40f;
+    --color-danger: #e74c3c;
+    --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* --- Base Styles & Typography --- */
+body {
+    font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--color-background);
+    color: var(--color-text);
+    line-height: 1.6;
+}
+
+main {
+    max-width: 1300px;
+    margin: 20px auto;
+    padding: 0 20px;
+}
+
+h1 {
+    color: var(--color-primary);
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+h2 {
+    color: var(--color-secondary);
+    font-weight: 400;
+    margin-top: 30px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+/* --- Navigation Bar --- */
+.topnav {
+    background-color: var(--color-primary);
+    padding: 18px 40px;
+    box-shadow: var(--shadow-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.topnav-title {
+    color: white;
+    font-size: 1.5em;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.topnav-links a {
+    color: white;
+    margin-left: 20px;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.topnav-links a:hover {
+    background-color: var(--color-secondary);
+}
+
+/* --- Forms & Login --- */
+.login-box {
+    max-width: 400px;
+    margin: 100px auto;
+    padding: 40px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--shadow-light);
+    text-align: center;
+}
+
+label {
+    display: block;
+    text-align: left;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: var(--color-text);
+}
+
+input {
+    display: block;
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    box-sizing: border-box;
+    transition: border-color 0.3s;
+}
+
+input:focus {
+    border-color: var(--color-accent);
+    outline: none;
+}
+
+button {
+    padding: 10px 15px;
+    background-color: var(--color-accent);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s;
+    margin-top: 20px;
+    width: 100%;
+}
+
+button:hover {
+    background-color: #0097a7; /* Darker accent */
+}
+
+/* --- Stats Cards (New Design) --- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: var(--shadow-light);
+    transition: transform 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+}
+
+.stat-title {
+    font-size: 1em;
+    color: var(--color-secondary);
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 2.2em;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+/* Colors for specific cards */
+.card-total { border-bottom: 5px solid var(--color-accent); }
+.card-records { border-bottom: 5px solid #ffa000; } /* Orange */
+.card-low { border-bottom: 5px solid var(--color-danger); }
+.card-avg { border-bottom: 5px solid var(--color-success); }
+
+
+/* --- Insight Card --- */
+.insight-card {
+    background-color: #e3f2fd; /* Light Blue background */
+    color: var(--color-primary);
+    padding: 15px 25px;
+    border-radius: 8px;
+    border: 1px solid #bbdefb;
+    margin-bottom: 30px;
+    font-size: 1.1em;
+    font-weight: 500;
+}
+
+/* --- Student List Table --- */
+.table-container {
+    background: white;
+    border-radius: 10px;
+    box-shadow: var(--shadow-light);
+    overflow: hidden; /* For smooth table corners */
+    margin-bottom: 40px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0;
+}
+
+table th, table td {
+    padding: 15px 20px;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+}
+
+table th {
+    background-color: #f8f8f8;
+    color: var(--color-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9em;
+}
+
+table tr:hover {
+    background-color: #fcfdff; /* Subtle row hover */
+}
+
+/* --- Add Student Form Box --- */
+.form-box {
+    max-width: 800px;
+    padding: 30px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: var(--shadow-light);
+    margin-bottom: 30px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-box button {
+    width: auto;
+    padding: 10px 25px;
+}
+
+/* --- Flash Messages --- */
+.flashes {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.flashes li {
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    font-weight: 500;
+    border: 1px solid transparent;
+}
+
+.flashes .success {
+    background-color: #e8f5e9;
+    color: #388e3c;
+    border-color: #c8e6c9;
+}
+
+.flashes .danger {
+    background-color: #ffebee;
+    color: #d32f2f;
+    border-color: #ffcdd2;
+}

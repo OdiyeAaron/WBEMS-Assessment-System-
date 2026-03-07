@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <style>
+        /* --- General Layout --- */
+        .kpi-grid, .main-dashboard-grid {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        /* 3-column grid for overview cards */
+        .kpi-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        /* 2:1 ratio for main content and side form */
+        .main-dashboard-grid {
+            grid-template-columns: 2fr 1fr;
+            align-items: flex-start; /* Aligns content at the top */
+        }
+
+        /* --- Card Styling (KPIs and Main) --- */
+        .card {
+            background: #ffffff;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Professional shadow */
+            padding: 20px;
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .kpi-title {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .kpi-value {
+            font-size: 2.2em;
+            font-weight: bold;
+            margin-top: 0;
+        }
+
+        /* Specific KPI Colors */
+        .kpi-blue { color: #007bff; }
+        .kpi-green { color: #28a745; }
+        .kpi-orange { color: #ffc107; }
+
+        /* --- Table Styling (Student Roster) --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #ffffff;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        thead th {
+            background-color: #f8f9fa;
+            color: #495057;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.8em;
+        }
+
+        tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+        
+        /* Priority Color Coding for Table Rows */
+        .priority-CRITICAL { background-color: #f8d7da; } /* Light Red */
+        .priority-HIGH { background-color: #fff3cd; } /* Light Yellow */
+
+        /* --- Form Styling --- */
+        form label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            margin-top: 10px;
+        }
+        form input[type="text"], form input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .btn-search {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            padding: 8px 15px;
+            cursor: pointer;
+        }
+
+        /* Action Link Styling */
+        .action-link {
+            text-decoration: none;
+            color: #007bff;
+            font-weight: 500;
+        }
+        .action-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+
+    <h2 class="mb-4">System Overview</h2>
+    
+    <div class="kpi-grid">
+        <div class="card">
+            <p class="kpi-title">Total Students</p>
+            <p class="kpi-value kpi-blue">{{ total_students }}</p>
+        </div>
+        <div class="card">
+            <p class="kpi-title">Avg. Competence Score</p>
+            <p class="kpi-value kpi-green">{{ avg_score }}%</p>
+        </div>
+        <div class="card">
+            <p class="kpi-title">Total Attendance Logs</p>
+            <p class="kpi-value kpi-orange">{{ total_attendance_records }}</p>
+        </div>
+    </div>
+
+    <hr class="my-4">
+    
+    <div class="main-dashboard-grid">
+        
+        <div class="card" style="grid-column: 1 / 2;">
+            <h2>Student Roster</h2>
+            
+            {# --- EXPORT DATA BUTTON (NEW) --- #}
+            {# Check if the user is an Admin before displaying the button #}
+            {% if current_user.is_authenticated and current_user.role == 'Admin' %}
+            <div style="margin-bottom: 20px;">
+                <a href="{{ url_for('export_data') }}" 
+                   style="display: inline-block; padding: 10px 18px; background-color: #28aa46; color: white; border-radius: 5px; text-decoration: none; font-weight: bold; font-size: 0.9em; transition: background-color 0.2s;">
+                    ⬇️ Export All Student Data (Excel XLSX)
+                </a>
+            </div>
+            {% endif %}
+            {# --- END EXPORT BUTTON --- #}
+
+            
+            <form method="GET" action="{{ url_for('search_students') }}" style="margin-bottom: 20px; display: flex;">
+                <input type="text" name="query" placeholder="Search by name, course, or ID..." style="padding: 8px; border: 1px solid #ced4da; border-radius: 6px 0 0 6px; flex-grow: 1;">
+                <button type="submit" class="btn-search">Search</button>
+            </form>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Course</th>
+                        <th>Academic Score</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in student_details %}
+                    {# FIX: Safely attempt to retrieve the ID, defaulting to 'none' if both keys fail. #}
+                    {% set student_id = student['id'] | default(student['student_id'] | default(none)) %}
+                    
+                    {# FIX: Use proper Jinja if/else structure to conditionally render the row. #}
+                    {% if student_id is not none %}
+                        <tr class="priority-{{ student['priority'] | default('LOW') }}">
+                            <td>{{ student_id }}</td>
+                            <td>{{ student['name'] }}</td>
+                            <td>{{ student['course'] or 'N/A' }}</td>
+                            <td>{{ student['academic_performance'] }}%</td>
+                            {# Use the retrieved student_id for the URL #}
+                            <td><a href="{{ url_for('student_dashboard', student_id=student_id) }}" class="action-link">View Profile</a></td>
+                        </tr>
+                    {% else %}
+                        {# This row only renders if the ID is missing #}
+                        <tr><td colspan="5" class="text-muted text-center">Student data missing ID (Row Skipped from link generation).</td></tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card" style="grid-column: 2 / 3;">
+            <h2>➕ Add New Student</h2>
+            <form method="POST" action="{{ url_for('add_student') }}">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required>
+
+                <label for="level">Level:</label>
+                <input type="text" id="level" name="level" required>
+
+                <label for="course">Course:</label>
+                <input type="text" id="course" name="course">
+
+                <label for="academic_performance">Academic Performance (%):</label>
+                <input type="number" id="academic_performance" name="academic_performance" value="60" min="0" max="100" step="0.1" required>
+
+                <button type="submit" class="btn-primary" style="width: 100%;">Add Student</button>
+            </form>
+        </div>
+
+    </div>
+{% endblock %}

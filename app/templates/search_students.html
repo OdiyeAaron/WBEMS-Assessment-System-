@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Student Search{% endblock %}
+
+{% block content %}
+  <h1>Student Search</h1>
+
+  <div class="form-box" style="max-width: 600px;">
+    <form method="get" action="{{ url_for('search_students') }}">
+      <div class="form-group">
+        <label for="query">Search Student Name</label>
+        <input name="query" id="query" value="{{ query }}" placeholder="Enter full or partial name..." required>
+      </div>
+      <button type="submit">Search</button>
+    </form>
+  </div>
+
+  {% if query %}
+    <h2>Results for "{{ query }}" ({{ students|length }} found)</h2>
+    <div class="table-container">
+      <table>
+        <thead><tr><th>Name</th><th>Level</th><th>Academic %</th><th>Details</th></tr></thead>
+        <tbody>
+          {% for s in students %}
+          <tr>
+            <td>{{ s.name }}</td>
+            <td>{{ s.level or '-' }}</td>
+            <td>{{ s.academic_performance }}</td>
+           <td><a href="{{ url_for('student_dashboard', student_id=s.id) }}" class="profile-link">View Profile</a></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" style="text-align: center;">No students matched your search.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p>Use the search bar above to find students by name.</p>
+  {% endif %}
+{% endblock %}r
